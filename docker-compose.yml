@@ -1,0 +1,84 @@
+# Docker Compose Configuration for Transaction Risk Engine
+# This orchestrates all services needed to run the fraud detection system
+
+version: '3.8'
+
+services:
+  # ===== SERVICE 1: PostgreSQL Database =====
+  postgres:
+    image: postgres:15
+    container_name: fraud-postgres
+    environment:
+      POSTGRES_DB: frauddb
+      POSTGRES_USER: frauduser
+      POSTGRES_PASSWORD: fraudpass  # Matches config.py default
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persist database data
+      - postgres_data:/var/lib/postgresql/data
+      # Auto-run migrations on first start
+      - ./db/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U frauduser -d frauddb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fraud-network
+    restart: unless-stopped
+
+  # ===== SERVICE 2: FastAPI Application =====
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-api
+    ports:
+      - "8000:8000"
+    environment:
+      # Database connection (using service name 'postgres' as host)
+      DATABASE_URL: postgresql+asyncpg://frauduser:fraudpass@postgres:5432/frauddb
+      
+      # Model configuration
+      MODEL_PATH: models/fraud_model_v1.pt
+      SCALER_PATH: models/scaler.pkl
+      
+      # Cache TTLs (in seconds)
+      USER_CACHE_TTL: 300    # 5 minutes
+      MERCHANT_CACHE_TTL: 1800  # 30 minutes
+      
+      # Production settings
+      LOG_LEVEL: info
+      WORKERS: 1  # Single worker (scale with replicas instead)
+      
+    depends_on:
+      postgres:
+        condition: service_healthy  # Wait for postgres to be ready
+    volumes:
+      # Share trained models directory (read-only for security)
+      - ./models:/app/models:ro
+      # Share code for development (remove in production)
+      - ./service:/app/service
+      - ./db:/app/db
+      - ./worker:/app/worker
+    networks:
+      - fraud-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# ===== VOLUMES =====
+volumes:
+  postgres_data:
+    driver: local
+
+# ===== NETWORKS =====
+networks:
+  fraud-network:
+    driver: bridge

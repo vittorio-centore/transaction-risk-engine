@@ -1,0 +1,64 @@
+# .dockerignore - files to exclude from Docker build context
+# This makes builds faster and images smaller
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Datasets (don't copy large CSV files into image)
+*.csv
+*.zip
+kaggle/
+data/
+
+# Model artifacts (we mount these as volumes instead)
+# models/*.pt
+# models/*.pkl
+
+# Logs
+*.log
+logs/
+
+# Test files
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Artifacts and temporary files
+.gemini/
+*.tmp
+tmp/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore

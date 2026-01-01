@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+
+# Trained models (users should train their own!)
+models/*.pt
+models/*.pkl
+models/*.pth
+models/evaluation_plots.png
+models/thresholds.json
+
+# But keep the models directory structure
+!models/.gitkeep
+
+# Datasets (too large for git)
+*.csv
+*.zip
+*.parquet
+sparkov_data/
+kaggle/
+data/
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker volumes
+postgres_data/
+
+# Temporary files
+*.tmp
+tmp/
+.cache/
+
+# OS
+Thumbs.db
+
+# Artifacts (documentation workspace)
+.gemini/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
